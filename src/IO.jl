@@ -58,9 +58,9 @@ Read strains in `f` to an array of `Strain`. Info about arguments:
 - `sequence_type`: `:dna`, `:aa` or `:rna`
 - `headerfields`: Array of field names for parsing the fasta headers. `"?"` will be ignored. 
 - `separator`: Typically `|` 
-- `strainfilter`: Ignore strains `s` for which strainfilter(s) == false`. 
+- `strainfilters`: Ignore strains `s` for which `mapreduce(f->f(st), *, strainfilters, init=true) == false`. This means that all filters should return `true`. 
 """
-function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilter=x->true)
+function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true])
 	strains = Array{Strain,1}(undef, 0)
 	nfiltered = 0
 	nunread = 0
@@ -71,7 +71,7 @@ function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, he
 		st = Strain(s, dat, sequence_type)
 		if BioTools.isempty(st)
 			nunread += 1
-		elseif strainfilter(st)
+		elseif mapreduce(f->f(st), *, strainfilters, init=true)
 			push!(strains, st)
 		else
 			nfiltered += 1
@@ -82,16 +82,38 @@ function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, he
 	return strains
 end
 
-function parse_header(h, headerfields, separator)
+"""
+- `headerfields` is the list of fields that should be parsed. `?` are ignored. If the header `h` is longer than `headerfields`, the end of it is ignored. 
+- `specialfields` are fields which require a special treatment. An example is the date (by default with `special_fields`), which calls `parse_date`. 
+"""
+function parse_header(h, headerfields, separator; specialfields=special_fields)
 	sh = split(h, separator)
 	dat = Dict()
 	for (i,f) in enumerate(headerfields)
-		if !in(f, ignored_header_fields)
+		if in(f, specialfields)
+			dat[f] = parse_special_field[f](sh[i])
+		elseif !in(f, ignored_header_fields)
 			dat[f] = sh[i]
 		end
 	end
 	return dat
 end
-function gapfilter(s::Strain; threshold=0.1)
-	return countgaps(s.seq) < threshold * length(s.seq)
+
+function parse_date(s::AbstractString)
+	date = missing
+	try 
+		date = Date(s)
+	catch
+		if !isnothing(match(r"-[0-9][0-9]*-XX$",s))
+			# Day is missing, which does not matter
+			date = Date(s[1:end-3])
+		elseif !isnothing(match(r"[1-2][0-9][0-9][0-9]",s))
+			# Month is missing, year is not --> date is missing
+			date = missing
+			# y = parse(Int64, match(r"[1-2][0-9][0-9][0-9]",hp["date"]).match)
+		else
+			date = missing
+		end
+	end
+	return date
 end

@@ -7,6 +7,8 @@ const augur_minimal_fields = [:strain, :date, :virus]
 const ignored_header_fields = ["?", "", '?']
 const flu_usual_header_fields = ["strain", "virus", "", "date", "region", "country", "", "", "", "segment"]
 const augur_all_header_fields = ["strain", "virus", "isolate_id", "date", "region", "country", "division", "location", "passage", "authors", "age", "gender"]
+const special_fields = ["date"]
+const parse_special_field = Dict("date" => parse_date)
 
 ## Errors
 function unknown_seqtype()

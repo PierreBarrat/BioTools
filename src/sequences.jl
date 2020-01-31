@@ -49,4 +49,4 @@ function hamming(a::BioSequence, b::BioSequence,
 		@error "Incorrect arguments."
 	end
 end
-hamming(a::AbstractStrain, b::AbstractStrain, normalization=false; ambiguous=:ignore) = hamming(a.seq, b.seq, normalization)
+hamming(a::AbstractStrain, b::AbstractStrain, normalization=false; ambiguous=:ignore) = hamming(a.seq, b.seq, normalization, ambiguous=ambiguous)

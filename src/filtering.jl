@@ -30,3 +30,14 @@ function remove!(strains::Array{<:AbstractStrain}, names, field=:strain; verbose
 	verbose && println("Filtered $(length(indices)) strains")
 	deleteat!(strains, indices)
 end
+
+"""
+	gapfilter(s::Strain; threshold=0.1)
+
+Return true if `s.seq` has less than `threshold * length(s.seq)` gaps.
+"""
+function gapfilter(s::Strain; threshold=0.1)
+	return countgaps(s.seq) < threshold * length(s.seq)
+end
+
+hasdate(x::AbstractStrain) = (!ismissing(get(x.data, "date", missing)) || !ismissing(get(x.data, :date, missing)))
