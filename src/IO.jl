@@ -58,7 +58,7 @@ Read strains in `f` to an array of `Strain`. Info about arguments:
 - `sequence_type`: `:dna`, `:aa` or `:rna`
 - `headerfields`: Array of field names for parsing the fasta headers. `"?"` will be ignored. 
 - `separator`: Typically `|` 
-- `strainfilters`: Ignore strains `s` for which `mapreduce(f->f(st), *, strainfilters, init=true) == false`. This means that all filters should return `true`. 
+- `strainfilters`: Iterable container of functions. Ignore strains `s` for which `mapreduce(f->f(st), *, strainfilters, init=true) == false`. This means that all filters should return `true`. 
 """
 function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true])
 	strains = Array{Strain,1}(undef, 0)
