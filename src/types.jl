@@ -20,10 +20,6 @@ end
 Fields: 
 - `seq::BioSequence{A}`
 - `data::Dict`
-
-	Strain(seq, dat, seqtype)
-
-Values of `seqtype`: `aa`, `dna` or `rna`. 
 """
 mutable struct Strain{A} <: AbstractStrain
 	seq::LongSequence{A}
@@ -39,8 +35,13 @@ function Strain(seqtype)
 	else
 		unknown_seqtype()
 	end
-
 end
+# Strain(A::DataType) = Strain(LongSequence{A}(), Dict())
+"""
+	Strain(seq, dat, seqtype)
+
+Construct `Strain` object from `seq` and `dat`, when `seq` needs to be converted to a `BioSequence` object first. Values of `seqtype`: `aa`, `dna` or `rna`. 
+"""
 function Strain(seq, dat, seqtype ; verbose=false)
 	if seqtype == :aa
 		try 
@@ -88,31 +89,56 @@ end
 # One way would be to have `data` be an array of subtype `colProfile`.
 # `colProfile` could then be designed independently
 # As long as the getindex function is overloaded properly this could be practical.
-# mutable struct SiteFrequency{A}
-# 	i::Int64
-# 	M::Int64
-# 	alphabet::Array{A,1}
-# 	freq::Dict{A,Float64}
-# end
-# getindex(F::SiteFrequency, a) = F.freq[a]
-# counts(F::SiteFrequency, a) = round(Int64, F.freq[a] * F.M)
+"""
+	mutable struct SiteFrequency{A}
+		i::Int64
+		M::Int64
+		freq::Dict{A,Float64}
+	end
+
+## Note
+From outside, the type should behave like a `Dict{A,Float64}`. That is, `keys(F::SiteFrequency)` should return the keys of `F.freq`. 
+"""
+mutable struct SiteFrequency{A}
+	i::Int64
+	M::Int64
+	freq::Dict{A,Float64}
+end
+"""
+	SiteFrequency(T::DataType, i::Int64=0, M::Int64=0)
+
+Constructor for empty structure. 
+"""
+function SiteFrequency(T::DataType, i::Int64=0, M::Int64=0)
+	return SiteFrequency(i, M, Dict{T,Float64}())
+end
+setindex!(F::SiteFrequency{A}, f::Float64, a::A) where A = setindex!(F.freq, f, a)
+getindex(F::SiteFrequency{A}, a::A) where A = F.freq[a]
+get(F::SiteFrequency{A}, a::A, def) where A = get(F.freq, a, def)
+count(F::SiteFrequency{A}, a::A) where A = (F.M == 0) ? error("SiteFrequency: Unknown sequence number") : round(Int64, F.freq[a] * F.M)
+counts(F::SiteFrequency) = (F.M == 0) ? error("SiteFrequency: Unknown sequence number") : Dict(k=>v*F.M for (k,v) in F.freq)
+keys(F::SiteFrequency) = keys(F.freq)
+alphabet(F::SiteFrequency) = keys(F)
+values(F::SiteFrequency) = values(F.freq)
+
 """
 	mutable struct Profile{A}
 		data::Array{Dict{A, Float64},1}
 		M::Int64
 	end
-Access `data` by indexing: `profile[i,a]` --> `profile.data[i][a]`.
+Access `data` by indexing: `p[i,a]` --> `p.data[i][a]`, or `p[i][a]` --> `p.data[i][a]`. This does not return a default value. For a default value, try `get(p, i, a, def)` or `get(p[i], a, def)` (the former might be slower). 
 """
 mutable struct Profile{A}
-	data::Array{Dict{A, Float64},1}
+	data::Array{SiteFrequency{A},1}
 	M::Int64 # Number of sequences the profile is based on
 end
-function Profile(T::DataType, L::Int64)
-	return Profile([Dict{T, Float64}() for i in 1:L], 0)
+function Profile(T::DataType, L::Int64, M::Int64=0)
+	return Profile([SiteFrequency(T,i,M) for i in 1:L], M)
 end
-
-getindex(P::Profile, i::Int64, a) = get(P.data[i], a, 0.)
+getindex(P::Profile, i::Int64, a) = P.data[i][a]
 getindex(P::Profile, i::Int64) = P.data[i]
+get(P::Profile, i::Int64, default) = get(P.data, i, default)
+get(P::Profile, i::Int64, a, default) = get(get(P.data, i, Dict()), a, default)
 length(P::Profile) = length(P.data)
 iterate(P::Profile, n=1) = iterate(P.data, n)
 
@@ -124,11 +150,10 @@ function Profile(S::Array{<:BioSequence{A}}) where A
 	if isempty(S)
 		@error "Cannot build a profile  from empty alignment"
 	else
-		prof = Profile(eltype(A), length(S[1]))
-		prof.M = length(S)
+		prof = Profile(eltype(A), length(S[1]), length(S))
 		for (m,s) in enumerate(S)
 			for (i,a) in enumerate(s)
-				prof.data[i][a] = prof[i,a] + 1. /prof.M
+				prof.data[i][a] = get(prof[i], a, 0.) + 1. /prof.M
 			end
 		end
 	end
@@ -139,11 +164,10 @@ function Profile(S::Array{<:Strain{A}}) where A
 	if isempty(S)
 		@error "Cannot build a profile from empty alignment"
 	else
-		prof = Profile(eltype(A), length(S[1].seq))
-		prof.M = length(S)
+		prof = Profile(eltype(A), length(S[1].seq), length(S))
 		for (m,s) in enumerate(S)
 			for (i,a) in enumerate(s.seq)
-				prof.data[i][a] = prof[i,a] + 1. /prof.M
+				prof.data[i][a] = get(prof[i], a, 0.) + 1. /prof.M
 			end
 		end
 	end

@@ -99,11 +99,11 @@ hamming(P::Profile, s::Strain) = hamming(s.seq, P)
 	consensus(P::Profile{A}) where A<:BioSymbol
 	consensus(X::Array{<:BioSequence,1})
 
-Return the consensus *sequence*, of type `LongSequence{alphabet}` where `eltype(alphabet)==A`.
+Return the consensus *sequence*, of type `LongSequence{alphabet}` where `eltype(alphabet)==A`. Does **NOT** handle ties. In case of a tie, the chosen symbol is undetermined. 
 
 	consensus(X::Array{Strain} [, data = Dict(:strain=>"consensus")])
 
-Return consensus `Strain`. 
+Return consensus `Strain`. Does **NOT** handle ties. In case of a tie, the chosen symbol is undetermined. 
 """
 function consensus(P::Profile{A}) where A<:BioSymbol
 	seq = LongSequence{symbol_to_alphabet[A]}(length(P))
