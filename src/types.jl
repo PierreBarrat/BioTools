@@ -1,4 +1,4 @@
-
+export alphabet
 
 """
 	abstract type AbstractStrain end
@@ -120,6 +120,7 @@ counts(F::SiteFrequency) = (F.M == 0) ? error("SiteFrequency: Unknown sequence n
 keys(F::SiteFrequency) = keys(F.freq)
 alphabet(F::SiteFrequency) = keys(F)
 values(F::SiteFrequency) = values(F.freq)
+isempty(F::SiteFrequency) = (F.M == 0) || isempty(F.freq)
 
 """
 	mutable struct Profile{A}
@@ -143,8 +144,8 @@ length(P::Profile) = length(P.data)
 iterate(P::Profile, n=1) = iterate(P.data, n)
 
 """
-	Profile(S::Array{<:BioSequence{A}}) where A
-	Profile(S::Array{<:Strain{A}}) where A
+	Profile(S::Array{<:BioSequence{A}}; ambiguous=false) where A
+	Profile(S::Array{<:Strain{A}}; ambiguous=false) where A
 """
 function Profile(S::Array{<:BioSequence{A}}; ambiguous=false) where A
 	if isempty(S)

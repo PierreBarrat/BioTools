@@ -8,11 +8,12 @@ using Dates
 import Base.getindex, Base.get, Base.setindex!, Base.keys, Base.values
 import Base.isempty, Base.length, Base.enumerate, Base.iterate
 import Base.show
+import BioSequences.alphabet
 
 
 
 export AbstractStrain, Strain
-export Profile
+export SiteFrequency, Profile
 export Flu
 
 include("types.jl")

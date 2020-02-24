@@ -3,5 +3,5 @@ using BioSequences
 using BioTools, BioSymbols
 using Dates
 
-include("BioTools/types.jl")
-# include("BioTools/IO.jl")
+# include("BioTools/types.jl") # empty
+include("BioTools/IO.jl")
