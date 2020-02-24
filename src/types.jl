@@ -146,20 +146,30 @@ iterate(P::Profile, n=1) = iterate(P.data, n)
 	Profile(S::Array{<:BioSequence{A}}) where A
 	Profile(S::Array{<:Strain{A}}) where A
 """
-function Profile(S::Array{<:BioSequence{A}}) where A
+function Profile(S::Array{<:BioSequence{A}}; ambiguous=false) where A
 	if isempty(S)
 		@error "Cannot build a profile  from empty alignment"
 	else
 		prof = Profile(eltype(A), length(S[1]), length(S))
 		for (m,s) in enumerate(S)
 			for (i,a) in enumerate(s)
-				prof.data[i][a] = get(prof[i], a, 0.) + 1. /prof.M
+				if ambiguous || !isambiguous(a)
+					prof.data[i][a] = get(prof[i], a, 0.) + 1. 
+				else
+					prof.data[i].M -= 1
+				end
+			end
+		end
+		# Normalizing 
+		for i in 1:length(prof)
+			for a in alphabet(prof.data[i])
+				prof.data[i][a] /= prof.data[i].M
 			end
 		end
 	end
 	return prof
 end
-function Profile(S::Array{<:Strain{A}}) where A
+function Profile(S::Array{<:Strain{A}}; ambiguous = false) where A
 	M = length(S)
 	if isempty(S)
 		@error "Cannot build a profile from empty alignment"
@@ -167,7 +177,17 @@ function Profile(S::Array{<:Strain{A}}) where A
 		prof = Profile(eltype(A), length(S[1].seq), length(S))
 		for (m,s) in enumerate(S)
 			for (i,a) in enumerate(s.seq)
-				prof.data[i][a] = get(prof[i], a, 0.) + 1. /prof.M
+				if ambiguous || !isambiguous(a)
+					prof.data[i][a] = get(prof[i], a, 0.) + 1. 
+				else
+					prof.data[i].M -= 1
+				end
+			end
+		end
+		# Normalizing
+		for i in 1:length(prof)
+			for a in alphabet(prof.data[i])
+				prof.data[i][a] /= prof.data[i].M
 			end
 		end
 	end
