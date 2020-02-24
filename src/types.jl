@@ -97,7 +97,8 @@ end
 	end
 
 ## Note
-From outside, the type should behave like a `Dict{A,Float64}`. That is, `keys(F::SiteFrequency)` should return the keys of `F.freq`. 
+- From outside, the type should behave like a `Dict{A,Float64}`. That is, `keys(F::SiteFrequency)` should return the keys of `F.freq`. 
+- TRY: Calling `f[a]` returns `0.` as a default value if `a` does not appear in `f.freq`. 
 """
 mutable struct SiteFrequency{A}
 	i::Int64
@@ -113,8 +114,8 @@ function SiteFrequency(T::DataType, i::Int64=0, M::Int64=0)
 	return SiteFrequency(i, M, Dict{T,Float64}())
 end
 setindex!(F::SiteFrequency{A}, f::Float64, a::A) where A = setindex!(F.freq, f, a)
-getindex(F::SiteFrequency{A}, a::A) where A = F.freq[a]
 get(F::SiteFrequency{A}, a::A, def) where A = get(F.freq, a, def)
+getindex(F::SiteFrequency{A}, a::A) where A = get(F, a, 0.)
 count(F::SiteFrequency{A}, a::A) where A = (F.M == 0) ? error("SiteFrequency: Unknown sequence number") : round(Int64, F.freq[a] * F.M)
 counts(F::SiteFrequency) = (F.M == 0) ? error("SiteFrequency: Unknown sequence number") : Dict(k=>v*F.M for (k,v) in F.freq)
 keys(F::SiteFrequency) = keys(F.freq)
