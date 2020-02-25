@@ -41,3 +41,19 @@ function gapfilter(s::Strain; threshold=0.1)
 end
 
 hasdate(x::AbstractStrain) = (!ismissing(get(x.data, "date", missing)) || !ismissing(get(x.data, :date, missing)))
+
+"""
+	datebin_to_date(d)
+"""
+function datebin_to_date(d)
+	if length(d) != 2 || d[2] < d[1]
+		@error "Invalid date bin"
+	end
+	return d[1] + div(d[2] - d[1], 2)
+end
+"""
+	date_to_datebin(date, binwidth)
+"""
+function date_to_datebin(date, binwidth)
+	return (date-binwidth, date+binwidth)
+end

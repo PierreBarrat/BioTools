@@ -44,7 +44,25 @@ function PosEvo(fp::FluPop;
 	end
 	return ph
 end
+# Regional weights could be implemented at the PosEvo level
+# For instance, a function `PosEvo(fp, i, weights)`
+# It's the only place where we compute frequencies, and we also know the strains since we have `fp` 
+
 # Why is this useful? I'll leave it empty for now... 
 function remove_rare_symbols!(ph::PosEvo, threshold)
 	
+end
+
+function frequency_series(ph::PosEvo)
+	X = Array{Date,1}(undef, 0)
+	Y = zeros(Float64, length(ph.data), length(ph.alphabet))
+	pop = Array{Int64,1}(undef, 0)
+	for (i, (d,f)) in enumerate(sort(ph.data))
+		push!(pop, f.M)
+		push!(X, BioTools.datebin_to_date(d))
+		for (k,a) in enumerate(ph.alphabet)
+			Y[i,k] = f[a]
+		end
+	end
+	return (X,Y,pop)
 end

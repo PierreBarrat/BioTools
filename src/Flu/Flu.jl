@@ -31,7 +31,6 @@ function add_strain_field!(fp::FluPop, field, default=0.)
 	end
 	nothing
 end
-
 """
 	consensus(fp::FluPop) 
 """
@@ -47,10 +46,31 @@ function PosEvo(A::DataType, i::Int64)
 end
 
 
+"""
+	mutable struct FrequencyTraj{A}
+"""
+mutable struct FrequencyTraj{A}
+	# All fields except `.data ` are initialized when calling the `all_trajectories` function. 
+	# Info on what trajectory represents
+	i::Int64
+	val::A # Symbol that trajectory represents
+	# Data
+	date::Date # Date at t=0
+	t::Array{Day,1} # Days
+	freq::Array{Float64,1}
+	pop::Array{Int64,1} # Size of (sampled) population at that time.
+	# Fixation 
+	index::Dict{Symbol, Union{Int64, Missing}} # Storing indices of start / end / activity (ie t=0)
+	fixation::Symbol # :fixed, :lost, :poly
+	# Misc. data
+	data::Dict # Expected fields -- 
+end
+
 include("IO.jl")
 include("global.jl")
 include("filtering.jl")
 include("frequencies.jl")
+include("trajectories.jl")
 include("lbi.jl")
 
 end
