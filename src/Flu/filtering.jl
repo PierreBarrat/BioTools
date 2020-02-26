@@ -44,3 +44,40 @@ function bin_by_date!(fp::FluPop;
 	# end
 end
 
+"""
+	filter_by_region!(fp::FluPop, r::Array{<:AbstractString,1})
+	filter_by_region!(fp::FluPop, r::AbstractString)
+"""
+function filter_by_region!(fp::FluPop, r::Array{<:AbstractString,1})
+	for S in values(fp.datebin)
+		idx = findall(s-> !in(s[:region], r), S)
+		for i in idx
+			delete!(fp.strains, S[i][:strain])
+		end
+		deleteat!(S, idx)
+	end
+end
+filter_by_region!(fp::FluPop, r::AbstractString) = filter_by_region!(fp, [r])
+"""
+	filter_by_region(fp::FluPop, r)
+"""
+filter_by_region(fp::FluPop, r) = begin out = deepcopy(fp); filter_by_region!(out, r); return out end
+
+"""
+	filter_by_country!(fp::FluPop, r::Array{<:AbstractString,1})
+	filter_by_country(fp::FluPop, r::AbstractString)
+"""
+function filter_by_country!(fp::FluPop, r::Array{<:AbstractString,1})
+	for S in values(fp.datebin)
+		idx = findall(s-> !in(s[:country], r), S)
+		for i in idx
+			delete!(fp.strains, S[i][:strain])
+		end
+		deleteat!(S, idx)
+	end
+end
+filter_by_country(fp::FluPop, r::AbstractString) = filter_by_country!(fp, [r])
+"""
+	filter_by_country(fp::FluPop, r)
+"""
+filter_by_country(fp::FluPop, r) = begin out = deepcopy(fp); filter_by_country!(out, r); return out end

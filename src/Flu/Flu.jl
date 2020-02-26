@@ -2,8 +2,10 @@ module Flu
 
 using BioTools
 using TreeTools
-using Dates, DelimitedFiles
 using BioSequences
+using Dates, DelimitedFiles, StatsBase
+
+import StatsBase.entropy
 
 export FluPop, AAFluPop
 export PosEvo

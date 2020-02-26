@@ -53,7 +53,12 @@ function remove_rare_symbols!(ph::PosEvo, threshold)
 	
 end
 
-function frequency_series(ph::PosEvo)
+"""
+	frequency_series(ph::PosEvo)
+
+Return arrays `X`, `Y` and `Z`, with `X` containing dates, `Y` a matrix with columns containing frequencies of symbols, and `Z` a vector containing population sizes frequencies are based on. 
+"""
+function frequency_series(ph::PosEvo; freq_threshold = 0.05)
 	X = Array{Date,1}(undef, 0)
 	Y = zeros(Float64, length(ph.data), length(ph.alphabet))
 	pop = Array{Int64,1}(undef, 0)
@@ -64,5 +69,34 @@ function frequency_series(ph::PosEvo)
 			Y[i,k] = f[a]
 		end
 	end
-	return (X,Y,pop)
+	# Delete positions with frequencies always smaller than `freq_threshold`
+	if freq_threshold > 0.
+		idx = Int64[]
+		for i in 1:size(Y,2)
+			for t in 1:size(Y,1)
+				if Y[t,i] > freq_threshold
+					push!(idx, i)
+					break
+				end
+			end
+		end
+	else
+		idx = 1:length(Y,2)
+	end
+	return (X,Y[:,idx],pop)
+end
+
+"""
+	entropy(Z::PosEvo)
+
+Return a dictionary `Date => Float` giving the entropy as a function of time for position history `Z`. 
+"""
+function entropy(Z::PosEvo; freq_threshold = 0.05)
+	X,Y,tmp = frequency_series(Z, freq_threshold=freq_threshold)
+	S = zeros(Float64, length(X))
+	for i in 1:length(S)
+		f = Y[i,:] ./ sum(Y[i,:])
+		S[i] = isnan(StatsBase.entropy(f)) ? 0. : StatsBase.entropy(f)
+	end
+	return S,X
 end

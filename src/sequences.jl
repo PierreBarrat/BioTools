@@ -108,7 +108,11 @@ Return consensus `Strain`. Does **NOT** handle ties. In case of a tie, the chose
 function consensus(P::Profile{A}) where A<:BioSymbol
 	seq = LongSequence{symbol_to_alphabet[A]}(length(P))
 	for (i,p) in enumerate(P)
-		seq[i] = findmax(p)[2]
+		if !isempty(p)
+			seq[i] = findmax(p)[2]
+		else
+			seq[i] = ambiguous(A)
+		end
 	end
 	return seq
 end
@@ -118,39 +122,6 @@ function consensus(X::Array{<:Strain,1}, data = Dict(:strain=>"consensus"))
 	seq = consensus(p)
 	return Strain(seq, data)
 end
-
-### OLD
-# """
-# 	consensus(Q::Array{LongSequence{A},1}) where A
-# 	consensus(Q::Array{<:Strain,1})
-# """
-# function consensus(Q::Array{LongSequence{A},1}) where A
-# 	profQ = profile(Q)
-# 	seq = []
-# 	for p in profQ
-# 		push!(seq, findmax(p)[2])
-# 	end
-# 	return LongSequence{A}(seq)
-# end
-# consensus(Q::Array{<:Strain,1}) = Strain(consensus([x.seq for x in Q]), Dict(:strain=>"consensus"))
-
-
-# """
-# 	profile(A::Array{BioSequence,1})
-# 	profile(Q::Array{<:AbstractStrain,1})
-# """
-# function profile(A::Array{<:BioSequence,1})
-# 	out = [Dict() for i in 1:length(A[1])]
-# 	for (m,s) in enumerate(A)
-# 		for (i,a) in enumerate(s)
-# 			out[i][a] = get(out[i], a, 0) + 1
-# 		end
-# 	end
-# 	return out
-# end
-# function profile(Q::Array{<:AbstractStrain,1})
-# 	return profile([x.seq for x in Q])
-# end
 
 
 

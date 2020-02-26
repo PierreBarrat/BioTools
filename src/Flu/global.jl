@@ -12,6 +12,9 @@ global lbi_integration_time = Day(100)
 # Settings from the seasonal-flu nextstrain module
 const segments = ["ha","na"]
 const nextstrain_regions = ["north_america", "south_america", "europe", "china", "oceania","southeast_asia", "japan_korea", "south_asia", "west_asia", "africa"]
+# 
+const flu_usual_header_fields = ["strain", "virus", "", "date", "region", "country", "", "", "", "segment"]
+const augur_all_header_fields = ["strain", "virus", "isolate_id", "date", "region", "country", "division", "location", "passage", "authors", "age", "gender"]
 
 outliers = Dict{Union{String,Missing},Array{String}}(missing=>String[])
 for l in lineages
