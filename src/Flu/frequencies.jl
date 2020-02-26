@@ -37,7 +37,8 @@ end
 function PosEvo(fp::FluPop; 
 				ambiguous=false,
 				threshold=0.05)
-	ph = []
+	A = eltype(first(fp.strains)[2].seq)
+	ph = PosEvo{A}[]
 	for i in 1:length(first(fp.strains)[2].seq)
 	    print("$i       \r")
 	    push!(ph, PosEvo(fp, i, ambiguous=ambiguous, threshold=threshold))		

@@ -97,3 +97,81 @@ function all_trajectories(posh::PosEvo{A}; fixed_thr = 0.95, lost_thr = 0.05, ke
 	end
 	return out
 end
+"""
+	all_trajectories(posh::Array{<:PosEvo,1}; fixed_thr = 0.95, lost_thr = 0.05, keep_unfinished=false)
+"""
+function all_trajectories(posh::Array{<:PosEvo,1}; fixed_thr = 0.95, lost_thr = 0.05, keep_unfinished=false)
+	return cat(all_trajectories.(posh, fixed_thr=fixed_thr, lost_thr=lost_thr, keep_unfinished=keep_unfinished)..., dims=1)
+end
+
+"""
+	previous_state_condition(traj::Array{<:FrequencyTraj,1}, past_state::Symbol)
+"""
+function previous_state_condition(traj::Array{<:FrequencyTraj,1}, past_state::Symbol)
+	idx = zeros(Int64, 0)
+	for (id, ft) in enumerate(traj)
+		if (ft.freq[1] < 0.5 && past_state==:lost) || (ft.freq[1] > 0.5 && past_state == :fixed)
+			push!(idx,id)
+		end
+	end
+	return traj[idx]
+end
+
+"""
+	frequency_condition(traj::Array{FrequencyTraj{A},1}, α; dα=0.05, shift_time=true) where A
+"""
+function frequency_condition(traj::Array{FrequencyTraj{A},1}, α; dα=0.05, shift_time=true) where A
+	traj_ = Array{FrequencyTraj{A},1}(undef,0)
+	for (id, ft) in enumerate(traj)
+		for (i,(t,f)) in enumerate(zip(ft.t, ft.freq))
+			if f >= α - dα && f < α + dα
+				ft_ = deepcopy(ft)
+				if shift_time
+					ft_.t = ft_.t .- t
+					ft_.date = ft_.date + t
+					ft_.index[:active] = i
+				end
+				push!(traj_, ft_)
+				break
+			end
+		end
+	end
+	return traj_
+end
+"""
+	min_frequency_condition(traj::Array{<:FrequencyTraj,1}, α; shift_time=true)
+
+Return trajectories that reach at least frequency `α`. 
+"""
+function min_frequency_condition(traj::Array{<:FrequencyTraj,1}, α; shift_time=true)
+	dα = (1-α)/2
+	return frequency_condition(traj, α+dα, dα=dα, shift_time=shift_time)
+end
+
+"""
+	population_size_condition(traj::Array{FrequencyTraj,1}, minpop)
+
+Select trajectories that are based on a total population of at least `minpop` for their whole duration.  
+Values of `mode`: `:overall` or `active`. 
+"""
+function population_size_condition(traj::Array{<:FrequencyTraj,1}, minpop; mode=:overall)
+	idx = zeros(Int64, 0)
+	for (id, ft) in enumerate(traj)
+		flag = true
+		if mode == :overall
+			for p in ft.pop[2:end-1]
+				if p < minpop
+					flag = false
+				end
+			end
+		elseif mode == :active
+			flag = ft.pop[ft.index[:active]] >= minpop
+		else
+			@error "Unrecognized mode $mode"
+		end
+		if flag
+			push!(idx, id)
+		end
+	end
+	return traj[idx]
+end
