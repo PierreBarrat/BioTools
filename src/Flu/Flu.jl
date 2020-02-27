@@ -3,7 +3,7 @@ module Flu
 using BioTools
 using TreeTools
 using BioSequences
-using Dates, DelimitedFiles, StatsBase
+using Dates, DelimitedFiles, StatsBase, JSON
 
 import StatsBase.entropy
 

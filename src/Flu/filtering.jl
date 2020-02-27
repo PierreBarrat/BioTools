@@ -81,3 +81,40 @@ filter_by_country(fp::FluPop, r::AbstractString) = filter_by_country!(fp, [r])
 	filter_by_country(fp::FluPop, r)
 """
 filter_by_country(fp::FluPop, r) = begin out = deepcopy(fp); filter_by_country!(out, r); return out end
+
+
+"""
+	datebin_to_date(d)
+"""
+function datebin_to_date(d)
+	if length(d) != 2 || d[2] < d[1]
+		@error "Invalid date bin"
+	end
+	return d[1] + div(d[2] - d[1], 2)
+end
+"""
+	date_to_datebin(date, binwidth)
+"""
+function date_to_datebin(date, binwidth)
+	return (date-binwidth, date+binwidth)
+end
+"""
+	find_datebin(date::Date, datebins)
+	find_datebin(date::Date, fp::FluPop)
+"""
+function find_datebin(date::Date, datebins)
+	found = false
+	out = first(datebins)
+	for db in datebins
+		if db[1] <= date && db[2] > date
+			out = db
+			found = true
+			break
+		end
+	end
+	if !found
+		@warn "date $date was not found"
+	end
+	return out
+end
+find_datebin(date::Date, fp::FluPop) = find_datebin(date, keys(fp.datebins))
