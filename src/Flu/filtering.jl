@@ -82,6 +82,14 @@ filter_by_country(fp::FluPop, r::AbstractString) = filter_by_country!(fp, [r])
 """
 filter_by_country(fp::FluPop, r) = begin out = deepcopy(fp); filter_by_country!(out, r); return out end
 
+"""
+	find_strains(S::Array{Strain{A}}, i::Int64, val; seqtype = :aa) where A
+
+Find strains in `S` that carry value `val` at position `i`. 
+"""
+function find_strains(S::Array{Strain{A}}, i::Int64, val; seqtype = :aa) where A
+	return S[findall(s->s.seq[i] == val, S)]
+end
 
 """
 	datebin_to_date(d)
@@ -117,4 +125,4 @@ function find_datebin(date::Date, datebins)
 	end
 	return out
 end
-find_datebin(date::Date, fp::FluPop) = find_datebin(date, keys(fp.datebins))
+find_datebin(date::Date, fp::FluPop) = find_datebin(date, keys(fp.datebin))

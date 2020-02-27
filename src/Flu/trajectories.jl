@@ -10,7 +10,7 @@ Those can then be filtered for given characteristics, such as being seen in some
 `end_indices`: `Y[i,a] >= fixed_thr && Y[i+1,a] >= fixed_thr` (*i.e.* mutation is now fixed) AND `Y[i-1,a] < fixed_thr` (*i.e.* it was not fixed before). 
 """
 function all_trajectories(posh::PosEvo{A}; fixed_thr = 0.95, lost_thr = 0.05, keep_unfinished=false) where A
-	X,Y,N = frequency_series(posh)
+	X,Y,N,αβ = frequency_series(posh)
 	out = Array{FrequencyTraj{A}, 1}(undef, 0)
 	for a in 1:size(Y,2)
 		#
@@ -80,11 +80,12 @@ function all_trajectories(posh::PosEvo{A}; fixed_thr = 0.95, lost_thr = 0.05, ke
 		end
 		# Storing found trajectory
 		for (is,ie) in zip(start_indices, end_indices)
-			val = posh.alphabet[a]
+			val = αβ[a]
 			date = X[is]
 			t = X[is:ie] .- X[is]
 			freq = Y[is:ie,a]
 			pop = N[is:ie]
+			strains = [Array{AbstractString, 1}(undef, x) for x in pop]
 			index = Dict(:start=>1, :end=>ie-is+1	, :active=>missing)
 			fixation = :poly
 			if Y[ie,a] >= fixed_thr
@@ -92,7 +93,7 @@ function all_trajectories(posh::PosEvo{A}; fixed_thr = 0.95, lost_thr = 0.05, ke
 			elseif Y[ie,a] <= lost_thr
 				fixation = :lost
 			end
-			push!(out, FrequencyTraj(posh.i, val, date, t, freq, pop, index, fixation, Dict()))
+			push!(out, FrequencyTraj(posh.i, val, date, t, freq, pop, strains, index, fixation, Dict()))
 		end
 	end
 	return out
@@ -174,4 +175,23 @@ function population_size_condition(traj::Array{<:FrequencyTraj,1}, minpop; mode=
 		end
 	end
 	return traj[idx]
+end
+
+
+"""
+	get_strains!(traj::FrequencyTraj, fp::FluPop)
+	get_strains!(traj::Array{<:FrequencyTraj}, fp::FluPop)
+
+Find strains corresponding to trajectory `traj`, filling the `traj.strains` field.
+"""
+function get_strains!(traj::FrequencyTraj, fp::FluPop)
+	for (i,t) in enumerate(traj.t)
+		db = find_datebin(traj.date + t, fp)
+		traj.strains[i] = [x[:strain] for x in find_strains(fp.datebin[db], traj.i, traj.val)]
+	end
+end
+function get_strains!(traj::Array{<:FrequencyTraj}, fp::FluPop)
+	for t in traj
+		get_strains!(t, fp)
+	end
 end

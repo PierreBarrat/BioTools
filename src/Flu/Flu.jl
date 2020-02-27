@@ -61,6 +61,7 @@ mutable struct FrequencyTraj{A}
 	t::Array{Day,1} # Days
 	freq::Array{Float64,1}
 	pop::Array{Int64,1} # Size of (sampled) population at that time.
+	strains::Array{<:Array{<:AbstractString, 1}, 1}
 	# Fixation 
 	index::Dict{Symbol, Union{Int64, Missing}} # Storing indices of start / end / activity (ie t=0)
 	fixation::Symbol # :fixed, :lost, :poly
@@ -74,5 +75,6 @@ include("filtering.jl")
 include("frequencies.jl")
 include("trajectories.jl")
 include("lbi.jl")
+include("fitness.jl")
 
 end

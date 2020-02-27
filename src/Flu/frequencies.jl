@@ -65,7 +65,7 @@ function frequency_series(ph::PosEvo; freq_threshold = 0.05)
 	pop = Array{Int64,1}(undef, 0)
 	for (i, (d,f)) in enumerate(sort(ph.data))
 		push!(pop, f.M)
-		push!(X, BioTools.datebin_to_date(d))
+		push!(X, datebin_to_date(d))
 		for (k,a) in enumerate(ph.alphabet)
 			Y[i,k] = f[a]
 		end
@@ -84,7 +84,7 @@ function frequency_series(ph::PosEvo; freq_threshold = 0.05)
 	else
 		idx = 1:length(Y,2)
 	end
-	return (X,Y[:,idx],pop)
+	return (X,Y[:,idx],pop,ph.alphabet[idx])
 end
 
 """
@@ -93,7 +93,7 @@ end
 Return a dictionary `Date => Float` giving the entropy as a function of time for position history `Z`. 
 """
 function entropy(Z::PosEvo; freq_threshold = 0.05)
-	X,Y,tmp = frequency_series(Z, freq_threshold=freq_threshold)
+	X,Y = frequency_series(Z, freq_threshold=freq_threshold)[1:2]
 	S = zeros(Float64, length(X))
 	for i in 1:length(S)
 		f = Y[i,:] ./ sum(Y[i,:])
