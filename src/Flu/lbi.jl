@@ -42,7 +42,7 @@ function get_lbi!(t::Tree{LBIData}, fp::FluPop, strainnames::Array{<:AbstractStr
 		if haskey(t.lleaves, s)
 			fp.strains[s].data[lbi_field] = t.lleaves[s].data.lbi
 		else
-			fp.strains[s].data[lbi_field] = -1. 
+			fp.strains[s].data[lbi_field] = missing 
 		end
 	end
 	nothing
@@ -57,7 +57,7 @@ end
 
 Compute lbi of strains in `fp` based on tree `t` and date binning of `fp.datebin`. Tree is modified in the process (life-state of nodes).
 The `datestyle` arguments modifies the life-state of nodes when LBI is computed. If `:all_anterior`, all nodes anterior to the current datebin are set to live. If `:datebin`, only nodes in the current datebin are set to live. 
-If a strain does not exist in the tree, its lbi will be set to `-1`. 
+If a strain does not exist in the tree, its lbi will be set to `missing`. 
 
 """
 function get_lbi!(fp::FluPop, t::Tree{LBIData}, datestyle=:all_anterior; 
@@ -82,14 +82,14 @@ function get_lbi!(fp::FluPop, t::Tree{LBIData}, datestyle=:all_anterior;
 			get_lbi!(t, fp, labels, datemin(datebin), max(datebin...), τ, lbi_field)
 		else
 			for s in strains
-				s.data[lbi_field] = -1
+				s.data[lbi_field] = missing
 			end
 		end
 	end
-	# Setting lbi to -1 for strains not in a datebin
+	# Setting lbi to missing for strains not in a datebin
 	for s in values(fp.strains)
 		if !haskey(s.data, lbi_field)
-			s.data[lbi_field] = -1
+			s.data[lbi_field] = missing
 		end
 	end
 end
