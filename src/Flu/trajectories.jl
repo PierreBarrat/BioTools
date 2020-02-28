@@ -195,3 +195,56 @@ function get_strains!(traj::Array{<:FrequencyTraj}, fp::FluPop)
 		get_strains!(t, fp)
 	end
 end
+
+"""
+	compute_tree_spread!(traj::FrequencyTraj, tree::Tree)
+
+Find how `traj` is spread in the tree: does come from one clade, two, more? This is quantified using either entropy or the sum sum of squared frequencies for the distribution of `traj` into clades. 
+
+## Notes
+- This only makes sense for mutations that are *rising*. Mutations falling from a fixed position to a finite frequency will not appear in the tree at the moment they start falling! 
+- This function assumes `traj.strains` is already known. If it hasn't been determined before, call compute_tree_spread!(traj::FrequencyTraj, tree::Tree, sp::StrainPop)
+"""
+function compute_tree_spread!(traj::FrequencyTraj, tree::Tree)
+	traj.data[:treespread] = [Int64[] for i in 1:length(traj)]
+	for (i, strains) in enumerate(traj.strains)
+		class = Dict()
+		for label in strains
+			if haskey(tree.lleaves, label)
+				# Find branch upstream of given strain that bears mutation
+				r = TreeTools.find_mut_root(tree.lleaves[label], traj.i, traj.val)
+				class[r] = get(class, r, 0) + 1
+			end
+		end
+		traj.data[:treespread][i] = collect(values(class))
+	end
+end
+"""
+	compute_tree_spread!(traj::FrequencyTraj, tree::Tree, fp::FluPop)
+"""
+function compute_tree_spread!(traj::FrequencyTraj, tree::Tree, fp::FluPop)
+	get_strains!(traj, fp)
+	compute_tree_spread!(traj, tree)
+end
+
+"""
+	get_regions!(traj::FrequencyTraj, fp::FluPop)
+	get_regions!(traj::Array{<:FrequencyTraj}, fp::FluPop) 
+"""
+function get_regions!(traj::FrequencyTraj, fp::FluPop)
+	get_strains!(traj, fp)
+	traj.data[:regions] = [Dict{String,Int64}() for i in 1:length(traj)]
+	traj.data[:countries] = [Dict{String,Int64}() for i in 1:length(traj)]
+	for (i,strains) in enumerate(traj.strains)
+		# traj.regionspread[i] = Dict(r=>0 for r in nextstrain_regions)
+		for s in strains
+			!in(fp.strains[s][:region], ["?",'?']) && (traj.data[:regions][i][fp.strains[s][:region]] = get(traj.data[:regions][i], fp.strains[s][:region], 0) + 1 )
+			!in(fp.strains[s][:country], ["?",'?']) && (traj.data[:countries][i][fp.strains[s][:country]] = get(traj.data[:countries][i], fp.strains[s][:country], 0) + 1 )
+		end
+	end
+end
+function get_regions!(traj::Array{<:FrequencyTraj}, fp::FluPop)
+	for t in traj
+		get_regions!(t, fp)
+	end
+end

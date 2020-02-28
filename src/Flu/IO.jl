@@ -61,7 +61,7 @@ function read_mutations_aa!(tree, mutfile::String, lineage, segment)
 					println(label); 
 				else
 					for m in mut["aa_muts"][gene]
-						push!(tmp, _parse_mut(m))
+						push!(tmp, _parse_aa_mut(m))
 						tmp[end].i = tmp[end].i + Int64((pos[1] - 1)/3) # Offset for different genes
 					end
 				end
@@ -73,13 +73,13 @@ end
 """
 Parse a string of format `XiY` into a `TreeTools.Mutation` object with fields `i`, `X` and `Y`.
 """
-function _parse_mut(m::String)
+function _parse_aa_mut(m::String)
 	if length(m) < 3
 		error("Can't parse mutation string of length smaller than 3")
 	end
 	i = parse(Int64, m[2:end-1])
-	old = m[1]
-	new = m[end]
+	old = AminoAcid(m[1])
+	new = AminoAcid(m[end])
 	out =  TreeTools.Mutation(i, old, new)
 	return out
 end

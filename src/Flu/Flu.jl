@@ -6,6 +6,7 @@ using BioSequences
 using Dates, DelimitedFiles, StatsBase, JSON
 
 import StatsBase.entropy
+import Base.length
 
 export FluPop, AAFluPop
 export PosEvo
@@ -68,6 +69,8 @@ mutable struct FrequencyTraj{A}
 	# Misc. data
 	data::Dict # Expected fields -- 
 end
+length(t::FrequencyTraj) = length(t.t)
+# getproperty(t, field) = hasfield(t, field) ? getfield(t, field) : t.data[field]
 
 include("IO.jl")
 include("global.jl")
