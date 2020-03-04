@@ -203,7 +203,7 @@ Find how `traj` is spread in the tree: does come from one clade, two, more? This
 
 ## Notes
 - This only makes sense for mutations that are *rising*. Mutations falling from a fixed position to a finite frequency will not appear in the tree at the moment they start falling! 
-- This function assumes `traj.strains` is already known. If it hasn't been determined before, call compute_tree_spread!(traj::FrequencyTraj, tree::Tree, sp::StrainPop)
+- This function assumes `traj.strains` is already known. If it hasn't been determined before, call compute_tree_spread!(traj::FrequencyTraj, tree::Tree, fp::FluPop)
 """
 function compute_tree_spread!(traj::FrequencyTraj, tree::Tree)
 	traj.data[:treespread] = [Int64[] for i in 1:length(traj)]

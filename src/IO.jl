@@ -51,24 +51,16 @@ function writefasta(S::Array{<:AbstractStrain}, fields; fillvals = false)
 	return out
 end
 
-"""
-	readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilter=x->true)
 
-Read strains in `f` to an array of `Strain`. Info about arguments: 
-- `sequence_type`: `:dna`, `:aa` or `:rna`
-- `headerfields`: Array of field names for parsing the fasta headers. `"?"` will be ignored. 
-- `separator`: Typically `|` 
-- `strainfilters`: Iterable container of functions. Ignore strains `s` for which `mapreduce(f->f(st), *, strainfilters, init=true) == false`. This means that all filters should return `true`. 
-"""
-function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true])
-	strains = Array{Strain,1}(undef, 0)
+function readfastastrains(f::Union{AbstractString,IO}, ::Val{A}, headerfields; separator = '|', strainfilters=[x->true]) where A <: BioSequences.Alphabet
+	strains = Array{Strain{A},1}(undef, 0)
 	nfiltered = 0
 	nunread = 0
 	ntot = 0
 	typeof(f) <: AbstractString ? println("Reading $f...") : println("Reading alignment...")
 	for (n,s) in FastaReader(f)
 		dat = parse_header(n, headerfields, separator)
-		st = Strain(s, dat, sequence_type)
+		st = Strain(LongSequence{A}(s), dat)
 		if BioTools.isempty(st)
 			nunread += 1
 		elseif mapreduce(f->f(st), *, strainfilters, init=true)
@@ -79,8 +71,71 @@ function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, he
 		ntot += 1
 	end
 	println("Read $(length(strains)) strains out of $ntot. Filtered $nfiltered. Could not read $nunread")
-	return strains
+	return strains	
 end
+function readfastastrains(f::Union{AbstractString,IO}, ::Val{A}, headerfields; separator = '|', strainfilters=[x->true]) where A <: Integer
+	strains = Array{ArtificialStrain{A},1}(undef, 0)
+	nfiltered = 0
+	nunread = 0
+	ntot = 0
+	typeof(f) <: AbstractString ? println("Reading $f...") : println("Reading alignment...")
+	for (n,s) in FastaReader(f)
+		dat = parse_header(n, headerfields, separator)
+		st = ArtificialStrain([parse(A,x) for x in s], dat)
+		if BioTools.isempty(st)
+			nunread += 1
+		elseif mapreduce(f->f(st), *, strainfilters, init=true)
+			push!(strains, st)
+		else
+			nfiltered += 1
+		end
+		ntot += 1
+	end
+	println("Read $(length(strains)) strains out of $ntot. Filtered $nfiltered. Could not read $nunread")
+	return strains	
+end
+"""
+	readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true])
+
+Possible symbols are 
+"""
+readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true]) = readfastastrains(f, Val(BioTools.type(sequence_type)), headerfields, separator=separator, strainfilters=strainfilters)
+readfastastrains(f::Union{AbstractString,IO}, sequence_type::DataType, headerfields; separator = '|', strainfilters=[x->true]) = readfastastrains(f, Val(sequence_type), headerfields, separator=separator, strainfilters=strainfilters)
+
+# """
+# 	readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilter=x->true)
+
+# Read strains in `f` to an array of `Strain`. Info about arguments: 
+# - `sequence_type`: `:dna`, `:aa`, `:rna`, `:artificial` (defaults to `Int64`), `:bool` or `Bool`, `:int8` or `Int8`, `:int64` or `Int64`. 
+# - `headerfields`: Array of field names for parsing the fasta headers. `"?"` will be ignored. 
+# - `separator`: Typically `|` 
+# - `strainfilters`: Iterable container of functions. Ignore strains `s` for which `mapreduce(f->f(st), *, strainfilters, init=true) == false`. This means that all filters should return `true`. 
+# """
+# function readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true])
+# 	strains = Array{Strain{A},1}(undef, 0)
+# 	nfiltered = 0
+# 	nunread = 0
+# 	ntot = 0
+# 	typeof(f) <: AbstractString ? println("Reading $f...") : println("Reading alignment...")
+# 	for (n,s) in FastaReader(f)
+# 		dat = parse_header(n, headerfields, separator)
+# 		if in(sequence_type, bioseqs)
+# 			st = Strain(s, dat, sequence_type)
+# 		else
+# 			st = ArtificialStrain(s, dat, sequence_type)
+# 		end
+# 		if BioTools.isempty(st)
+# 			nunread += 1
+# 		elseif mapreduce(f->f(st), *, strainfilters, init=true)
+# 			push!(strains, st)
+# 		else
+# 			nfiltered += 1
+# 		end
+# 		ntot += 1
+# 	end
+# 	println("Read $(length(strains)) strains out of $ntot. Filtered $nfiltered. Could not read $nunread")
+# 	return strains
+# end
 
 """
 - `headerfields` is the list of fields that should be parsed. `?` are ignored. If the header `h` is longer than `headerfields`, the end of it is ignored. 

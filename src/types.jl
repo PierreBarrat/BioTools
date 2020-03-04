@@ -13,6 +13,12 @@ end
 getindex(s::AbstractStrain, key::Symbol) = get(s.data, key) do 
 	haskey(s.data, String(key)) ? s.data[String(key)] : @error "Keys $key or $(String(key)) not found."
 end
+"""
+	isempty(st::AbstractStrain)
+"""
+function isempty(st::AbstractStrain)
+	return isempty(st.seq) && isempty(st.data)
+end
 
 """
 	mutable struct Strain{A} <: AbstractStrain
@@ -36,7 +42,6 @@ function Strain(seqtype)
 		unknown_seqtype()
 	end
 end
-# Strain(A::DataType) = Strain(LongSequence{A}(), Dict())
 """
 	Strain(seq, dat, seqtype)
 
@@ -73,12 +78,24 @@ function cannot_read(seq, dat, seqtype)
 end
 
 """
-	isempty(st::Strain)
+	mutable struct ArtificialStrain{T} <: AbstractStrain
+		seq::Array{T,1}
+		data::Dict
+	end
 """
-function isempty(st::Strain)
-	return isempty(st.seq) && isempty(st.data)
+mutable struct ArtificialStrain{T} <: AbstractStrain
+	seq::Array{T,1}
+	data::Dict
 end
-
+function ArtificialStrain(T::DataType)
+	return ArtificialStrain(T[], Dict())
+end
+"""
+	ArtificialStrain(seq, dat, T::DataType = Int64)
+"""
+function ArtificialStrain(seq, dat, T::DataType = Int64)
+	return ArtificialStrain(convert(Array{T,1}, seq), dat)
+end
 
 
 # abstract type SequenceProfile end

@@ -5,7 +5,7 @@
 Call `readfastastrains` to read `f`. Store the result in a `FluPop` object. 
 """
 function FluPop(f::Union{AbstractString,IO}, 
-	sequencetype::Symbol, 
+	sequencetype, 
 	headerfields; 
 	flulineage=missing, 
 	segment=missing, 

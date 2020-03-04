@@ -5,29 +5,26 @@ function compute_fitness!(traj::Array{<:FrequencyTraj,1}, fp::FluPop, ftype; tra
 	if trajfield == ftype
 		@error "Cannot replace $trajfield field when computing fitness."
 	end
+	_tf = (ftype == :strains && trajfield == Symbol(ftype,:_fitness)) ? Symbol(strainfield,:_fitness) : trajfield
 	# 
 	for t in traj
-		t.data[trajfield] = zeros(Float64, length(t))
+		t.data[_tf] = zeros(Float64, length(t))
 	end
 	# 
 	if ftype == :strains
-		if trajfield == Symbol(ftype,:fitness)
-			compute_strains_fitness!(traj, fp, strainfield, shift=shift)
-		else
-			compute_strains_fitness!(traj, fp, strainfield, trajfield=trajfield, shift=shift)
-		end
+		compute_strains_fitness!(traj, fp, strainfield, trajfield=_tf, shift=shift)
 	elseif ftype == :date
 		for t in traj
-			compute_date_fitness!(t, trajfield)
+			compute_date_fitness!(t, _tf)
 		end
 	elseif ftype == :region
 		for t in traj
 			get_regions!(t, fp)
-			compute_region_fitness!(t, trajfield)
+			compute_region_fitness!(t, _tf)
 		end
 	elseif ftype == :treespread
 		for t in traj
-			compute_treespread_fitness!(t, trajfield, score = :squaredfreqs)
+			compute_treespread_fitness!(t, _tf, score = :squaredfreqs)
 		end
 	end
 end

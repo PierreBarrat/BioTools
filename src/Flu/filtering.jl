@@ -3,13 +3,13 @@
 
 Bin `fp` by dates, from `start` to `last`. 
 """
-function bin_by_date!(fp::FluPop; 
+function bin_by_date!(fp::FluPop{S}; 
 	start=:auto,
 	stop=:auto,
 	binwidth=Day(121),
-	binspacing=Day(121))
+	binspacing=Day(121)) where S
 	
-	fp.datebin = Dict{Tuple{Date,Date}, Array{AbstractStrain,1}}()
+	fp.datebin = Dict{Tuple{Date,Date}, Array{S,1}}()
 	# Start and end dates
 	if start == :auto
 		startdate = findmin([x[:date] for x in values(fp.strains)])[1]
@@ -24,24 +24,48 @@ function bin_by_date!(fp::FluPop;
 	# 
 	now = startdate + binwidth
 	while now < stopdate # If dlat - dstart != 0 mod[binwidth], the last bin will be smaller than others and is not considered here
-		fp.datebin[now-binwidth, now] = Array{Strain,1}(undef, 0)
+		fp.datebin[now-binwidth, now] = Array{S,1}(undef, 0)
 		now += binspacing
 	end
-	binlist = collect(keys(fp.datebin))
 
+	binlist = sort(collect(keys(fp.datebin)))
 	for s in values(fp.strains)
-		for b in binlist
-			if s[:date] >= b[1] && s[:date] < b[2]
-				push!(fp.datebin[b[1],b[2]], s)
-			end
+		date = s[:date]
+		if date < binlist[end][2] && date > binlist[1][1]
+			db = _find_datebin(date, binlist)
+			push!(fp.datebin[db], s)
 		end
-	end
+	end	
 
 	nothing
-	# for (d, s) in out
-	# 	md = datebin_to_date(d)
-	# 	sp.datepop[md] = s
-	# end
+end
+
+"""
+Assume sorted datebins
+"""
+function _find_datebin(date::Date, datebins::Array{Tuple{Date,Date}})
+	N = length(datebins) # Max
+	i0 = 1 # Min
+	i = div(N,2)
+	found = false
+	out = datebins[i]
+	c = 0
+	while !found
+		c += 1
+		if date >= datebins[i][1]
+			if date < datebins[i][2]
+				found = true
+				out = datebins[i]
+			else
+				i0 = i
+				i = i0 + div(N-i0,2) + 1
+			end
+		else
+			N = i
+			i = i0 + div(N-i0,2)
+		end
+	end
+	return out
 end
 
 """
@@ -83,11 +107,11 @@ filter_by_country(fp::FluPop, r::AbstractString) = filter_by_country!(fp, [r])
 filter_by_country(fp::FluPop, r) = begin out = deepcopy(fp); filter_by_country!(out, r); return out end
 
 """
-	find_strains(S::Array{Strain{A}}, i::Int64, val; seqtype = :aa) where A
+	find_strains(S::Array{<:AbstractStrain}, i::Int64, val; seqtype = :aa)
 
 Find strains in `S` that carry value `val` at position `i`. 
 """
-function find_strains(S::Array{Strain{A}}, i::Int64, val; seqtype = :aa) where A
+function find_strains(S::Array{<:AbstractStrain}, i::Int64, val; seqtype = :aa)
 	return S[findall(s->s.seq[i] == val, S)]
 end
 
