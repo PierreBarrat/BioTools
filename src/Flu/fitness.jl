@@ -19,8 +19,9 @@ function compute_fitness!(traj::Array{<:FrequencyTraj,1}, fp::FluPop, ftype; tra
 		end
 	elseif ftype == :region
 		for t in traj
+			ref_regions = Dict(datebin_to_date(db)=>get_regions(s) for (db,s) in fp.datebin)
 			get_regions!(t, fp)
-			compute_region_fitness!(t, _tf)
+			compute_region_fitness!(t, ref_regions, _tf)
 		end
 	elseif ftype == :treespread
 		for t in traj
@@ -102,14 +103,14 @@ end
 """
 	compute_region_fitness!(traj::FrequencyTraj, field)
 """
-function compute_region_fitness!(traj::FrequencyTraj, field)
+function compute_region_fitness!(traj::FrequencyTraj, ref_regions::Dict, field)
 	for (i,r) in enumerate(traj.data[:regions])
-		traj.data[field][i] = isempty(r) ? 0. : compute_region_entropy(r)
+		traj.data[field][i] = (isempty(ref_regions) || isempty(r)) ? 0. : (compute_region_entropy(r))# - compute_region_entropy(ref_regions[traj.date + traj.t[i]]))
 	end
 end
 function compute_region_entropy(regionspread; scoretype=:entropy)
 	x = collect(values(regionspread))
-	x /= sum(x)
+	!isempty(x) && (x /= sum(x))
 	if scoretype == :squaredfreqs
 		return isempty(x) ? 0. : 1 - sum(x.^2)
 	elseif scoretype == :entropy

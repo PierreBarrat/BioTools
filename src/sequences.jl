@@ -4,7 +4,7 @@ export hamming, profile, consensus
 	countgaps(s::BioSequence)
 """
 function countgaps(s::BioSequence)
-	return count(x->isgap(x)||isambiguous(x), s)
+	return BioSequences.count(x->isgap(x)||isambiguous(x), s)
 end
 countgaps(s::AbstractStrain) = countgaps(s.seq)
 
@@ -106,7 +106,7 @@ Return the consensus *sequence*, of type `LongSequence{alphabet}` where `eltype(
 Return consensus `Strain`. Does **NOT** handle ties. In case of a tie, the chosen symbol is undetermined. 
 """
 function consensus(P::Profile{A}) where A<:BioSymbol
-	seq = LongSequence{symbol_to_alphabet[A]}(length(P))
+	seq = LongSequence{symbol_to_alphabet(A)}(length(P))
 	for (i,p) in enumerate(P)
 		if !isempty(p)
 			seq[i] = findmax(p)[2]

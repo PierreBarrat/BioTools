@@ -150,3 +150,14 @@ function find_datebin(date::Date, datebins)
 	return out
 end
 find_datebin(date::Date, fp::FluPop) = find_datebin(date, keys(fp.datebin))
+
+
+function get_regions(S::Array{<:Strain,1})
+	out = Dict{String,Int64}()
+	for s in S
+		if !in(s[:region], ["?",'?']) 
+			out[s[:region]] = get(out, s[:region], 0) + 1
+		end
+	end
+	return out
+end

@@ -13,23 +13,29 @@ function PosEvo(fp::FluPop, i::Int64;
 		@error "`fp.datebin` is empty"
 	end
 	#
-	for (d, S) in fp.datebin
-		# Frequencies for that site and timebin
-		f = SiteFrequency(A, i, 0)
-		for s in S
-			if ambiguous || !isambiguous(s.seq[i])
-				f[s.seq[i]] = get(f, s.seq[i], 0.) + 1.
-				f.M += 1
+	datebins = sort(collect(keys(fp.datebin)))
+	for (j,d) in enumerate(datebins)
+		S = fp.datebin[d]
+		if !isempty(S) || j == 1
+			# Frequencies for that site and timebin
+			f = SiteFrequency(A, i, 0)
+			for s in S
+				if ambiguous || !isambiguous(s.seq[i])
+					f[s.seq[i]] = get(f, s.seq[i], 0.) + 1.
+					f.M += 1
+				end
 			end
-		end
-		for a in BioTools.alphabet(f)
-			f[a] /= f.M
-			if !in(a, out.alphabet)
-				push!(out.alphabet, a)
+			for a in BioTools.alphabet(f)
+				f[a] /= f.M
+				if !in(a, out.alphabet)
+					push!(out.alphabet, a)
+				end
 			end
+			# 
+			out.data[d] = f
+		else j > 1 # Use frequencies of previous datebin (i>1 here)
+			out.data[d] = deepcopy(out.data[datebins[j-1]])
 		end
-		# 
-		out.data[d] = f
 	end
 	remove_rare_symbols!(out, threshold)
 	return out

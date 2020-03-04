@@ -17,11 +17,11 @@ export SiteFrequency, Profile
 export Flu
 export isambiguous, ambiguous
 
+include("global.jl")
 include("types.jl")
 include("sequences.jl")
 include("IO.jl")
 include("filtering.jl")
-include("global.jl")
 
 include("Flu/Flu.jl")
 

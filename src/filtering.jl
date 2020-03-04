@@ -36,8 +36,11 @@ end
 
 Return true if `s.seq` has less than `threshold * length(s.seq)` gaps.
 """
-function gapfilter(s::Strain; threshold=0.1)
-	return countgaps(s.seq) < threshold * length(s.seq)
-end
+gapfilter(s::Strain; threshold=0.1) = countgaps(s.seq) < threshold * length(s.seq)
+"""
+	gapfilter(s::ArtificialStrain; threshold=0.)
+"""
+gapfilter(s::ArtificialStrain; threshold=0.)  = true
+# gapfilter(threshold::Float64) = s->gapfilter(s, threshold)
 
 hasdate(x::AbstractStrain) = (!ismissing(get(x.data, "date", missing)) || !ismissing(get(x.data, :date, missing)))

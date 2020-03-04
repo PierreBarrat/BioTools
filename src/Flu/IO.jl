@@ -9,7 +9,7 @@ function FluPop(f::Union{AbstractString,IO},
 	headerfields; 
 	flulineage=missing, 
 	segment=missing, 
-	strainfilters = [!is_flu_outlier(flulineage), BioTools.hasdate],
+	strainfilters = [!is_flu_outlier(flulineage), BioTools.hasdate, s->BioTools.gapfilter(s,threshold=0.05)],
 	separator = '|')	
 	
 	strains = readfastastrains(f, sequencetype, headerfields, separator = separator, strainfilters = strainfilters)
