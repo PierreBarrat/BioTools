@@ -75,10 +75,15 @@ end
 function filter_by_region!(fp::FluPop, r::Array{<:AbstractString,1})
 	for S in values(fp.datebin)
 		idx = findall(s-> !in(s[:region], r), S)
-		for i in idx
-			delete!(fp.strains, S[i][:strain])
-		end
 		deleteat!(S, idx)
+	end
+	for s in values(fp.strains)
+		if !in(s[:region], r)
+			# println(s[:region])
+			# println(r[1])
+			# @show s[:region] == r[1]
+			delete!(fp.strains, s[:strain])
+		end
 	end
 end
 filter_by_region!(fp::FluPop, r::AbstractString) = filter_by_region!(fp, [r])

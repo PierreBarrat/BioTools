@@ -72,8 +72,6 @@ function all_trajectories(posh::PosEvo{A}; fixed_thr = 0.95, lost_thr = 0.05, ke
 			end
 		end
 
-
-
 		# If nothing found, break
 		if isempty(start_indices) || isempty(end_indices)
 			continue
@@ -171,6 +169,24 @@ function population_size_condition(traj::Array{<:FrequencyTraj,1}, minpop; mode=
 			@error "Unrecognized mode $mode"
 		end
 		if flag
+			push!(idx, id)
+		end
+	end
+	return traj[idx]
+end
+
+"""
+	derivative_condition(traj::Array{<:FrequencyTraj,1}; direction=:positive)
+
+Note: Use the `:active` index of trajectories for computing derivative. Zero derivative are ignored. 
+"""
+function derivative_condition(traj::Array{<:FrequencyTraj,1}; direction=:positive)
+	idx = Int64[]
+	for (id, ft) in enumerate(traj)
+		df = (ft.index[:active] < 2) ? 0. : (ft.freq[ft.index[:active]] - ft.freq[ft.index[:active] - 1])
+		if direction == :positive && df > 0
+			push!(idx, id)
+		elseif direction == :negative && df < 0
 			push!(idx, id)
 		end
 	end

@@ -21,7 +21,7 @@ end
 
 
 """
-	_get_lbi!(t::Tree{LBIData}, fp::FluPop, strainnames::Array{String}, datemin, datemax, τ, lbi_field)
+	get_lbi!(t::Tree{LBIData}, fp::FluPop, strainnames::Array{String}, datemin, datemax, τ, lbi_field)
 
 Compute lbi of `strainsnames` according to tree `t`. Leaves of tree posterior to `datemax` or anterior to `datemin` are set to dead. Tree is modified in the process (life-state and lbi value of nodes). 
 Store the resulting lbi value in `fp.strains[lbi_field]`

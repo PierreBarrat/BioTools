@@ -15,8 +15,8 @@ const parse_special_field = Dict("date" => parse_date, :date => parse_date, :Dat
 								# BioSequences.DNA => BioSequences.DNAAlphabet,
 								# BioSequences.RNA => BioSequences.RNAAlphabet)
 symbol_to_alphabet(::Type{AminoAcid}) = BioSequences.AminoAcidAlphabet
-symbol_to_alphabet(::Type{DNA}) = BioSequences.DNAAlphabet
-symbol_to_alphabet(::Type{RNA}) = BioSequences.RNAAlphabet
+symbol_to_alphabet(::Type{DNA}) = BioSequences.DNAAlphabet{4}
+symbol_to_alphabet(::Type{RNA}) = BioSequences.RNAAlphabet{4}
 ambiguous(::Type{AminoAcid}) = AA_X
 ambiguous(::Type{DNA}) = DNA_N
 ambiguous(::Type{RNA}) = RNA_N
@@ -25,8 +25,8 @@ isambiguous(::T) where T<:Real = false # Artificial sequences are never ambiguou
 const sequenceymbols = (:aa, :rna, :dna, :int8, :int64, :bool, :artificial)
 function type(x::Symbol)
 	if x == :aa return AminoAcidAlphabet
-	elseif x == :rna return RNAAlphabet
-	elseif x == :dna return DNAAlphabet
+	elseif x == :rna return RNAAlphabet{4}
+	elseif x == :dna return DNAAlphabet{4}
 	elseif x == :int8 return Int8
 	elseif (x == :int64 || x == :artificial) return Int64
 	elseif x == :bool return Bool
@@ -42,3 +42,6 @@ function unknown_seqtype()
 	@error "Unknown sequence type `$seqtype`-- Possible values: (`:aa`, `:dna`, `:rna`)"
 end
 
+
+# const aa2int = Dict(AA_Gap => 1, AA_A=>2, AA_C=>3, AA_D=>4, AA_E=>5, AA_F=>6, AA_G=>7, AA_H=>8, AA_I=>9, AA_K=>10, AA_L=>11, AA_M=>12, AA_N=>13, AA_P=>14, AA_Q=>15, AA_R=>16, AA_S=>17, AA_T=>18, AA_V=>19, AA_W=>20, Y=>21)
+# function aa2int()

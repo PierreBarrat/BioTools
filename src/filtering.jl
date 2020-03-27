@@ -36,7 +36,7 @@ end
 
 Return true if `s.seq` has less than `threshold * length(s.seq)` gaps.
 """
-gapfilter(s::Strain; threshold=0.1) = countgaps(s.seq) < threshold * length(s.seq)
+gapfilter(s::Strain; threshold=0.05) = countgaps(s.seq) < threshold * length(s.seq)
 """
 	gapfilter(s::ArtificialStrain; threshold=0.)
 """
