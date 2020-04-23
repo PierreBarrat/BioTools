@@ -1,5 +1,5 @@
 """
-	bin_by_date!fsp::FluPop; start=:auto, last=:auto, binwidth=Day(121), binspacing=Day(121))
+	bin_by_date!(fp::FluPop; start=:auto, last=:auto, binwidth=Day(121), binspacing=Day(121))
 
 Bin `fp` by dates, from `start` to `last`. 
 """
@@ -165,4 +165,8 @@ function get_regions(S::Array{<:Strain,1})
 		end
 	end
 	return out
+end
+
+function numdate(d::Date)
+	return year(d) + (month(d)-1) /12 + day(d) / 365
 end

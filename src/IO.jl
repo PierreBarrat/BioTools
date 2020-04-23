@@ -52,7 +52,7 @@ function writefasta(S::Array{<:AbstractStrain}, fields; fillvals = false)
 end
 
 
-function readfastastrains(f::Union{AbstractString,IO}, ::Val{A}, headerfields; separator = '|', strainfilters=[x->true]) where A <: BioSequences.Alphabet
+function readfastastrains(f::Union{AbstractString,IO}, ::Val{A}, headerfields; separator = '|', strainfilters=[x->true], ignore_read_errors=false) where A <: BioSequences.Alphabet
 	strains = Array{Strain{A},1}(undef, 0)
 	nfiltered = 0
 	nunread = 0
@@ -60,7 +60,16 @@ function readfastastrains(f::Union{AbstractString,IO}, ::Val{A}, headerfields; s
 	typeof(f) <: AbstractString ? println("Reading $f...") : println("Reading alignment...")
 	for (n,s) in FastaReader(f)
 		dat = parse_header(n, headerfields, separator)
-		st = Strain(LongSequence{A}(s), dat)
+		st = try
+			Strain(LongSequence{A}(s), dat)
+		catch err
+			if ignore_read_errors
+				st = Strain(:aa)
+			else
+				println(s)
+				error(err)
+			end
+		end
 		if BioTools.isempty(st)
 			nunread += 1
 		elseif mapreduce(f->f(st), *, strainfilters, init=true)
@@ -102,8 +111,8 @@ Possible symbols are `$(BioTools.sequenceymbols)`. Type of output will depend on
 
 Implemented filters are `hasdate` and `gapfilter`
 """
-readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true]) = readfastastrains(f, Val(BioTools.type(sequence_type)), headerfields, separator=separator, strainfilters=strainfilters)
-readfastastrains(f::Union{AbstractString,IO}, sequence_type::DataType, headerfields; separator = '|', strainfilters=[x->true]) = readfastastrains(f, Val(sequence_type), headerfields, separator=separator, strainfilters=strainfilters)
+readfastastrains(f::Union{AbstractString,IO}, sequence_type::Symbol, headerfields; separator = '|', strainfilters=[x->true], ignore_read_errors=false) = readfastastrains(f, Val(BioTools.type(sequence_type)), headerfields, separator=separator, strainfilters=strainfilters, ignore_read_errors=ignore_read_errors)
+readfastastrains(f::Union{AbstractString,IO}, sequence_type::DataType, headerfields; separator = '|', strainfilters=[x->true], ignore_read_errors=false) = readfastastrains(f, Val(sequence_type), headerfields, separator=separator, strainfilters=strainfilters, ignore_read_errors=ignore_read_errors)
 
 
 """

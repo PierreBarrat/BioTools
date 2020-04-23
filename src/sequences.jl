@@ -1,4 +1,4 @@
-export hamming, profile, consensus
+export hamming, profile, consensus, numseq
 
 """
 	countgaps(s::BioSequence)
@@ -103,7 +103,7 @@ Return the consensus *sequence*, of type `LongSequence{alphabet}` where `eltype(
 
 	consensus(X::Array{Strain} [, data = Dict(:strain=>"consensus")])
 
-Return consensus `Strain`. Does **NOT** handle ties. In case of a tie, the chosen symbol is undetermined. 
+Return consensus of `X`, with field `data`. Does **NOT** handle ties. In case of a tie, the chosen symbol is undetermined. 
 """
 function consensus(P::Profile{A}) where A<:BioSymbol
 	seq = LongSequence{symbol_to_alphabet(A)}(length(P))
@@ -121,6 +121,29 @@ function consensus(X::Array{<:Strain,1}, data = Dict(:strain=>"consensus"))
 	p = Profile(X)
 	seq = consensus(p)
 	return Strain(seq, data)
+end
+
+"""
+	numseq(s::LongSequence{AminoAcidAlphabet})
+	numseq(S::Array{LongSequence{AminoAcidAlphabet}})
+"""
+function numseq(s::LongSequence{AminoAcidAlphabet})
+	σ = Array{Int64,1}(undef, length(s))
+	for (i,a) in enumerate(s)
+		σ[i] = haskey(aa2int, a) ? aa2int[a] : 1
+	end
+	return σ
+end
+function numseq(S::Array{LongSequence{AminoAcidAlphabet}}) 
+	if isempty(S)
+		out = Array{Int64,2}(undef, 0, 0)
+	else
+		out = Array{Int64,2}(undef, length(S), length(S[1]))
+		for (i,s) in enumerate(S)
+			out[i,:] .= numseq(s)
+		end
+	end
+	return out
 end
 
 

@@ -10,10 +10,11 @@ function FluPop(f::Union{AbstractString,IO},
 	flulineage=missing, 
 	segment=missing, 
 	strainfilters = [!is_flu_outlier(flulineage), BioTools.hasdate, s->BioTools.gapfilter(s,threshold=0.05)],
-	separator = '|')	
+	separator = '|', 
+	ignore_read_errors=false)	
 	
-	strains = readfastastrains(f, sequencetype, headerfields, separator = separator, strainfilters = strainfilters)
-	return FluPop(strains = Dict(String(x[:strain])=>x for x in strains))
+	strains = readfastastrains(f, sequencetype, headerfields, separator = separator, strainfilters = strainfilters, ignore_read_errors=ignore_read_errors)
+	return FluPop(strains = Dict{String, eltype(strains)}(String(x[:strain])=>x for x in strains))
 end
 """
 	AAFluPop(f::Union{AbstractString,IO}, headerfields; [kwargs...])

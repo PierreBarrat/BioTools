@@ -43,5 +43,8 @@ function unknown_seqtype()
 end
 
 
-# const aa2int = Dict(AA_Gap => 1, AA_A=>2, AA_C=>3, AA_D=>4, AA_E=>5, AA_F=>6, AA_G=>7, AA_H=>8, AA_I=>9, AA_K=>10, AA_L=>11, AA_M=>12, AA_N=>13, AA_P=>14, AA_Q=>15, AA_R=>16, AA_S=>17, AA_T=>18, AA_V=>19, AA_W=>20, Y=>21)
-# function aa2int()
+const aa2int = Dict(AA_Gap => 1, AA_A=>2, AA_C=>3, AA_D=>4, AA_E=>5, AA_F=>6, AA_G=>7, AA_H=>8, AA_I=>9, AA_K=>10, AA_L=>11, AA_M=>12, AA_N=>13, AA_P=>14, AA_Q=>15, AA_R=>16, AA_S=>17, AA_T=>18, AA_V=>19, AA_W=>20, AA_Y=>21)
+const int2aa = Dict(i => findfirst(==(i), BioTools.aa2int) for i in 1:21)
+# function int2aa(a::Integer)
+# 	return _aa_alphabet[a]	
+# end
