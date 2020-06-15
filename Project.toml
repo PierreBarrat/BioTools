@@ -1,0 +1,15 @@
+name = "BioTools"
+uuid = "f9dbc87a-0885-469b-9543-b2b2c1c89c97"
+authors = ["PierreBarrat <p.barrat@live.fr>"]
+version = "0.1.0"
+
+[deps]
+BioSequences = "7e6ae17a-c86d-528c-b3b9-7f778a29fe59"
+BioSymbols = "3c28c6f8-a34d-59c4-9654-267d177fcfa9"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+FastaIO = "a0c94c4b-ebed-5953-b5fc-82fe598ac79f"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+TreeTools = "62f0eae3-8c0e-4032-a621-7756092209e5"
