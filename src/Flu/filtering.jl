@@ -189,3 +189,41 @@ has_mutation(x::AbstractStrain, mutation) = (x.seq[mutation[1]] == mutation[2])
 function has_mutation(mutation)
 	return x->has_mutation(x, mutation)
 end
+
+
+"""
+	ispoly(p::PosEvo, threshold=0.95)
+
+`true` if position only has one amino acid above `threshold` for its whole history. 
+"""
+function ispoly(p::PosEvo, threshold=0.95)
+	fref = first(p.data)[2]
+	fmax, aref = findmax(fref.freq)
+	if fmax > threshold
+		for f in values(p.data)
+			if get(f.freq, aref, 0) <= threshold
+				return true
+			end
+		end
+	else
+		return true
+	end
+	return false
+end
+
+"""
+"""
+function isbinary(p::PosEvo, threshold = 0.05)
+	for freq in values(p.data)
+		c = 0
+		for (a,f) in freq.freq
+			if f > threshold
+				c += 1
+			end
+		end
+		if c > 2
+			return false
+		end
+	end
+	return true
+end
