@@ -22,6 +22,7 @@ include("types.jl")
 include("sequences.jl")
 include("IO.jl")
 include("filtering.jl")
+include("alignments.jl")
 
 include("Flu/Flu.jl")
 
