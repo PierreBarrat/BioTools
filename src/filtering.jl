@@ -1,7 +1,7 @@
 """
 	remove(strains::Array{<:AbstractStrain}, names, [field=:strain]; verbose=false)
 
-Remove strains for which `s.data[field]` is in `names`. 
+Remove strains for which `s.data[field]` is in `names`. Return a new array.
 """
 function remove(strains::Array{<:AbstractStrain}, names, field=:strain; verbose=false)
 	out = Array{eltype(strains),1}(undef, length(strains))
