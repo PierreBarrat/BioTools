@@ -64,12 +64,13 @@ function readfastastrains(f::Union{AbstractString,IO}, ::Val{A}, headerfields; s
 			Strain(LongSequence{A}(s), dat)
 		catch err
 			if ignore_read_errors
-				st = Strain(:aa)
+				st = Strain(alphabet_to_seqsymbol(A))
 			elseif occursin("X",s)
 				st = Strain(LongSequence{A}(replace(s, "X"=>"N")), dat)
 			elseif occursin("x",s)
 				st = Strain(LongSequence{A}(replace(s, "x"=>"N")), dat)
 			else
+				println(dat)
 				println(s)
 				error(err)
 			end

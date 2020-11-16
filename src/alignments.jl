@@ -20,3 +20,33 @@ function translate(infasta::String, outfasta::String; CDS = [(1,:end)])
 		end
 	end
 end
+
+"""
+	replace_conflicting_symbols(s::AbstractString, seqtype::Symbol)
+
+Replace characters in `s` that do not match the sequence type with the ambiguous symbol. Return a new string.
+"""
+function replace_conflicting_symbols(s::AbstractString, seqtype::Symbol)
+	if seqtype == :dna
+		R = Regex("[^$(_DNAAlphabet)]")
+	elseif seqtype == :aa
+		R = Regex("[^$(_AAAlphabet)]")
+	elseif seqtype == :rna
+		R = Regex("[^$(_RNAAlphabet)]")
+	else
+		@error "Possible symbols: `:dna`, `:aa`, `:rna`"
+	end
+	return replace(s, R=>Char(ambiguous(type(seqtype))))
+end
+
+"""
+	replace_conflicting_symbols(infasta::String, outfasta::String, seqtype::Symbol)
+"""
+function replace_conflicting_symbols(infasta::String, outfasta::String, seqtype::Symbol)
+	open(outfasta, "w") do of
+		for (header, seq) in FastaReader(infasta)
+			s = replace_conflicting_symbols(seq, seqtype)
+			writefasta(outfasta, [(header, s)], "a")
+		end
+	end
+end
