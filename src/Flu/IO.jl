@@ -1,6 +1,6 @@
 """
 	FluPop(f::Union{AbstractString,IO}, sequencetype::Symbol, headerfields; 
-	flulineage=missing, segment=missing, strainfilters = [!is_flu_outlier(flulineage), BioTools.hasdate], separator = '|')
+	flulineage=missing, segment=missing, strainfilters = flu_usual_filters(flulineage), separator = '|')
 
 Call `readfastastrains` to read `f`. Store the result in a `FluPop` object. 
 """

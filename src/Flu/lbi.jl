@@ -21,12 +21,12 @@ end
 
 
 """
-	get_lbi!(t::Tree{LBIData}, fp::FluPop, strainnames::Array{String}, datemin, datemax, τ, lbi_field)
+	get_lbi!(t::Tree{TreeTools.LBIData}, fp::FluPop, strainnames::Array{String}, datemin, datemax, τ, lbi_field)
 
 Compute lbi of `strainsnames` according to tree `t`. Leaves of tree posterior to `datemax` or anterior to `datemin` are set to dead. Tree is modified in the process (life-state and lbi value of nodes). 
 Store the resulting lbi value in `fp.strains[lbi_field]`
 """
-function get_lbi!(t::Tree{LBIData}, fp::FluPop, strainnames::Array{<:AbstractString}, datemin, datemax, τ, lbi_field, verbose=false)
+function get_lbi!(t::Tree{TreeTools.LBIData}, fp::FluPop, strainnames::Array{<:AbstractString}, datemin, datemax, τ, lbi_field, verbose=false)
 	# Setting life-state of tree nodes
 	for node in values(t.leaves)
 		if haskey(fp.strains, node.label)
@@ -53,7 +53,7 @@ function get_lbi!(t::Tree{LBIData}, fp::FluPop, strainnames::Array{<:AbstractStr
 end
 
 """
-	function get_lbi!(fp::FluPop, t::Tree{LBIData}, datestyle=:all_anterior; 
+	function get_lbi!(fp::FluPop, t::Tree{TreeTools.LBIData}, datestyle=:all_anterior; 
 				lineage="h3n2", 
 				segment="ha", 
 				τ=get_tau(lineage,segment),
@@ -64,7 +64,7 @@ The `datestyle` arguments modifies the life-state of nodes when LBI is computed.
 If a strain does not exist in the tree, its lbi will be set to `missing`. 
 
 """
-function get_lbi!(fp::FluPop, t::Tree{LBIData}, datestyle=:all_anterior; 
+function get_lbi!(fp::FluPop, t::Tree{TreeTools.LBIData}, datestyle=:all_anterior; 
 				lineage="h3n2", 
 				segment="ha", 
 				τ=get_lbi_timescale(lineage,segment),
@@ -101,14 +101,14 @@ end
 
 
 """
-	local_lbi_maximas(t::Tree{LBIData}, fp::FluPop, τ)
+	local_lbi_maximas(t::Tree{TreeTools.LBIData}, fp::FluPop, τ)
 
 The idea is to find local maximas of the LBI for each date bin of `fp`. In order to determine if `n` is a local maximum, one needs to know the LBI of its ancestor `a`. Thus, the lbi of `a` has to be recomputed for every datebin, when new leaves come live and old ones die. 
 ## Notes
 - `fp` should be date-binned already. 
 - Strains in `fp` and `t` should match **exactly**. 
 """
-function local_lbi_maximas!(t::Tree{LBIData}, fp::FluPop, τ=get_lbi_timescale("h3n2","ha"))
+function local_lbi_maximas!(t::Tree{TreeTools.LBIData}, fp::FluPop, τ=get_lbi_timescale("h3n2","ha"))
 	out = Dict()
 	# Setting nodes alive in date order
 	for (db, strains) in sort(fp.datebin, by=x->x[1])
@@ -127,11 +127,11 @@ function local_lbi_maximas!(t::Tree{LBIData}, fp::FluPop, τ=get_lbi_timescale("
 	return out
 end
 """
-	local_lbi_maximas(t::Tree{LBIData})
+	local_lbi_maximas(t::Tree{TreeTools.LBIData})
 
 Find all nodes that are a local maxima of the LBI. Does not compute the LBI. 
 """
-function local_lbi_maximas(t::Tree{LBIData})
+function local_lbi_maximas(t::Tree{TreeTools.LBIData})
 	out = String[]
 	for (l,n) in t.lnodes
 		if n.isroot || n.data.lbi > n.anc.data.lbi 
@@ -147,14 +147,14 @@ end
 # if false 
 
 # """
-# 	local_lbi_maximas(t::Tree{LBIData}, sp::StrainPop, τ)
+# 	local_lbi_maximas(t::Tree{TreeTools.LBIData}, sp::StrainPop, τ)
 
 # The idea is to find local maximas of the LBI for each date bin of `sp`. In order to determine if `n` is a local maximum, one needs to know the LBI of its ancestor `a`. Thus, the lbi of `a` has to be recomputed for every datebin, when new leaves come live and old ones die. 
 # ## Notes
 # - `sp` should be date-binned already. 
 # - Strains in `sp` and `t` should match **exactly**. 
 # """
-# function local_lbi_maximas!(t::Tree{LBIData}, sp::StrainPop, τ)
+# function local_lbi_maximas!(t::Tree{TreeTools.LBIData}, sp::StrainPop, τ)
 # 	out = Dict()
 # 	# Setting nodes alive in date order
 # 	for (db, strains) in sort(sp.datebin, by=x->x[1])
@@ -173,11 +173,11 @@ end
 # 	return out
 # end
 # """
-# 	local_lbi_maximas(t::Tree{LBIData})
+# 	local_lbi_maximas(t::Tree{TreeTools.LBIData})
 
 # Find all nodes that are a local maxima of the LBI. Does not recompute LBI. 
 # """
-# function local_lbi_maximas(t::Tree{LBIData})
+# function local_lbi_maximas(t::Tree{TreeTools.LBIData})
 # 	out = String[]
 # 	for (l,n) in t.lnodes
 # 		if n.isroot || n.data.lbi > n.anc.data.lbi 
