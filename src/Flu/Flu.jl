@@ -77,7 +77,7 @@ include("global.jl")
 include("filtering.jl")
 include("frequencies.jl")
 include("trajectories.jl")
-include("lbi.jl")
+#include("lbi.jl")
 include("fitness.jl")
 
 end
